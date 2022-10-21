@@ -1,0 +1,11 @@
+[package]
+name = "uio-rs"
+version = "0.1.0"
+edition = "2021"
+authors = ["Erik Bånvik <erik.public@gmail.com>"]
+license = "MIT"
+
+[dependencies]
+memmap2 = "0.5"
+log = "0.4"
+byteorder = "1.4"
