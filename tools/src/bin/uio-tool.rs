@@ -6,12 +6,12 @@ use uio_rs;
 fn main() -> ExitCode {
     env_logger::init();
 
-    let cmd = Command::new("uio-tool")
-        .bin_name("uio-tool")
+    let cmd = Command::new("internal-tool")
+        .bin_name("internal-tool")
         .arg(
-            Arg::new("uio")
+            Arg::new("internal")
                 .short('u')
-                .long("uio")
+                .long("internal")
                 .required(true)
                 .value_parser(clap::value_parser!(usize))
                 .action(clap::ArgAction::Set),
@@ -23,6 +23,12 @@ fn main() -> ExitCode {
                 .value_parser(clap::value_parser!(usize))
                 .action(clap::ArgAction::Set)
                 .default_value("0"),
+        )
+        .arg(
+            Arg::new("interrupt")
+                .short('i')
+                .long("interrupt")
+                .action(clap::ArgAction::SetTrue),
         )
         .subcommand(
             Command::new("write")
@@ -54,10 +60,17 @@ fn main() -> ExitCode {
                 ),
         );
     let matches = cmd.get_matches();
-    let uio_number = *matches.get_one("uio").unwrap();
+    let uio_number = *matches.get_one("internal").unwrap();
     let map_number = *matches.get_one("map").unwrap();
 
-    let mut mem_map = if let Ok(mm) = uio_rs::Mapping::new(uio_number, map_number) {
+    if *matches.get_one("interrupt").unwrap() {
+        let mut interrupt = uio_rs::Interrupt::new(uio_number).expect("Bad interrupt");
+        interrupt.enable().expect("Failed to enable interrupt");
+        let value = interrupt.wait().expect("Failed to wait for interrupt");
+        println!("Interrupt {}", value);
+    }
+
+    let mut mem_map = if let Ok(mm) = uio_rs::Map::new(uio_number, map_number) {
         mm
     } else {
         return ExitCode::FAILURE;

@@ -1,11 +1,17 @@
 /// Crate errors
 
+/// Error
 #[derive(Debug)]
 pub enum Error {
+    /// No device found
     NoDevice,
+    /// Invalid address
     Address,
+    /// Underlying IO error
     Io(std::io::Error),
+    /// Parse error
     Parse,
+    /// Value out of bounds
     OutOfBound,
 }
 

@@ -7,5 +7,4 @@ license = "MIT"
 
 [dependencies]
 memmap2 = "0.5"
-log = "0.4"
 byteorder = "1.4"
