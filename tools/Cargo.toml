@@ -7,6 +7,5 @@ license = "MIT"
 
 [dependencies]
 clap = "4.0"
-env_logger = "0.9"
+env_logger = "0.11"
 uio-rs = { version = "0.1", path = "../uio-rs" }
-

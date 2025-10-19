@@ -1,7 +1,7 @@
 use clap::{Arg, Command};
 use env_logger;
 use std::process::ExitCode;
-use uio_rs;
+use uio_rs::{self, Device};
 
 fn main() -> ExitCode {
     env_logger::init();
@@ -13,14 +13,14 @@ fn main() -> ExitCode {
                 .short('u')
                 .long("internal")
                 .required(true)
-                .value_parser(clap::value_parser!(usize))
+                .value_parser(clap::value_parser!(u16))
                 .action(clap::ArgAction::Set),
         )
         .arg(
             Arg::new("map")
                 .short('m')
                 .long("map")
-                .value_parser(clap::value_parser!(usize))
+                .value_parser(clap::value_parser!(u16))
                 .action(clap::ArgAction::Set)
                 .default_value("0"),
         )
@@ -63,14 +63,19 @@ fn main() -> ExitCode {
     let uio_number = *matches.get_one("internal").unwrap();
     let map_number = *matches.get_one("map").unwrap();
 
+    let mut device = Device::new(uio_number).expect("Failed to open UIO device");
+
     if *matches.get_one("interrupt").unwrap() {
-        let mut interrupt = uio_rs::Interrupt::new(uio_number).expect("Bad interrupt");
-        interrupt.enable().expect("Failed to enable interrupt");
-        let value = interrupt.wait().expect("Failed to wait for interrupt");
+        device
+            .interrupt_enable()
+            .expect("Failed to enable interrupt");
+        let value = device
+            .interrupt_wait()
+            .expect("Failed to wait for interrupt");
         println!("Interrupt {}", value);
     }
 
-    let mut mem_map = if let Ok(mm) = uio_rs::Map::new(uio_number, map_number) {
+    let mut mem_map = if let Ok(mm) = uio_rs::Map::new(&device, map_number) {
         mm
     } else {
         return ExitCode::FAILURE;

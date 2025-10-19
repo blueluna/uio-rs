@@ -1,32 +1,18 @@
 use crate::error::Error;
-use std::fs::{self, File, OpenOptions};
-
-/// Format path for devfs UIO device file
-pub(crate) fn devfs_uio_file_path(uio_number: usize) -> std::path::PathBuf {
-    std::path::PathBuf::from(format!("/dev/uio{}", uio_number))
-}
-
-/// Open the `/dev/uio<number>`
-pub(crate) fn devfs_uio_open(uio_number: usize) -> Result<File, Error> {
-    OpenOptions::new()
-        .read(true)
-        .write(true)
-        .open(devfs_uio_file_path(uio_number))
-        .map_err(|e| e.into())
-}
+use std::fs;
 
 /// Format path for UIO sysfs directory
-pub(crate) fn sysfs_uio_dir(uio_number: usize) -> std::path::PathBuf {
+pub(crate) fn sysfs_uio_dir(uio_number: u16) -> std::path::PathBuf {
     std::path::PathBuf::from(format!("/sys/class/uio/uio{}", uio_number))
 }
 
 /// Format path for UIO maps sysfs directory
-pub(crate) fn sysfs_uio_maps_dir(uio_number: usize) -> std::path::PathBuf {
+pub(crate) fn sysfs_uio_maps_dir(uio_number: u16) -> std::path::PathBuf {
     sysfs_uio_dir(uio_number).join("maps")
 }
 
 /// Format path for UIO map sysfs directory
-pub(crate) fn sysfs_uio_map_dir(uio_number: usize, map_number: usize) -> std::path::PathBuf {
+pub(crate) fn sysfs_uio_map_dir(uio_number: u16, map_number: u16) -> std::path::PathBuf {
     sysfs_uio_maps_dir(uio_number).join(format!("map{}", map_number))
 }
 
@@ -34,6 +20,12 @@ pub(crate) fn sysfs_uio_map_dir(uio_number: usize, map_number: usize) -> std::pa
 pub(crate) fn read_string<P: AsRef<std::path::Path>>(path: P) -> Result<String, Error> {
     let text = fs::read_to_string(path)?;
     Ok(String::from(text.trim()))
+}
+
+/// Read decimal u64 from file.
+pub(crate) fn read_u64<P: AsRef<std::path::Path>>(path: P) -> Result<u64, Error> {
+    let string = read_string(path)?;
+    u64::from_str_radix(&string, 10).map_err(|e| e.into())
 }
 
 /// Read hexadecimal u64 from file. Will remove `0x` prefix.
@@ -58,4 +50,8 @@ pub(crate) fn read_hexadecimal_usize<P: AsRef<std::path::Path>>(path: P) -> Resu
         &text
     };
     usize::from_str_radix(text, 16).map_err(|e| e.into())
+}
+
+pub(crate) fn get_page_size() -> u64 {
+    unsafe { libc::sysconf(libc::_SC_PAGESIZE) as u64 }
 }

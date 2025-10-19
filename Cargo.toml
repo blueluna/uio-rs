@@ -1,2 +1,3 @@
 [workspace]
 members = [ "tools", "uio-rs" ]
+resolver = "2"

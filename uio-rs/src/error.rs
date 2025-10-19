@@ -5,6 +5,8 @@
 pub enum Error {
     /// No device found
     NoDevice,
+    /// Failed to lock device
+    DeviceLock,
     /// Invalid address
     Address,
     /// Underlying IO error
