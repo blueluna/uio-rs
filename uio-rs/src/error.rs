@@ -15,6 +15,8 @@ pub enum Error {
     Parse,
     /// Value out of bounds
     OutOfBound,
+    /// Item not found
+    NotFound,
 }
 
 impl From<std::io::Error> for Error {

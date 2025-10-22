@@ -1,5 +1,5 @@
-use crate::MapDescription;
 use crate::error::Error;
+use crate::{DeviceDescription, MapDescription};
 use std::fs::{File, OpenOptions};
 use std::io::{Read, Write};
 use std::os::unix::io::{AsRawFd, RawFd};
@@ -21,6 +21,13 @@ impl Device {
             Ok(_) => Ok(Device { uio_number, file }),
             Err(_) => Err(Error::DeviceLock),
         }
+    }
+    /// Create UIO device from UIO name
+    ///
+    /// The name needs to uniquely match a UIO device name, otherwise a NotFound error will be raised
+    pub fn try_from_name(name: &str) -> Result<Device, Error> {
+        let description = DeviceDescription::find_unique(name)?;
+        Device::new(description.uio())
     }
 
     /// Get the UIO device number

@@ -63,6 +63,28 @@ impl DeviceDescription {
             .map_while(|v| DeviceDescription::new(v).ok())
             .collect()
     }
+
+    pub fn find_unique(name: &str) -> Result<DeviceDescription, Error> {
+        let mut matches = 0usize;
+        let mut fist_match = None;
+        for description in DeviceDescription::enumerate() {
+            if description.name == name {
+                if fist_match.is_none() {
+                    fist_match = Some(description)
+                }
+                matches = matches.saturating_add(1);
+            }
+        }
+        if let Some(description) = fist_match {
+            if matches == 1 {
+                Ok(description)
+            } else {
+                Err(Error::NotFound)
+            }
+        } else {
+            Err(Error::NotFound)
+        }
+    }
 }
 
 impl std::fmt::Display for DeviceDescription {
