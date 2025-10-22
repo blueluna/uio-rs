@@ -29,7 +29,7 @@ impl<'a> Map<'a> {
         options.offset(offset).len(map_size);
 
         let mem_map = options.map_raw(&device.file)?;
-        // Follwing is required for not getting "double accesses" to registers
+        // Following is required for not getting "double accesses" to registers
         mem_map.advise(memmap2::Advice::Random)?;
 
         Ok(Self {
@@ -60,27 +60,40 @@ impl<'a> Map<'a> {
         Ok(())
     }
 
+    pub fn write_u64(&mut self, byte_offset: usize, value: u64) -> Result<(), Error> {
+        let destination = self.map_slice_mut(byte_offset, std::mem::size_of::<u64>())?;
+        NativeEndian::write_u64(destination, value);
+        Ok(())
+    }
+
+    pub fn write_u128(&mut self, byte_offset: usize, value: u128) -> Result<(), Error> {
+        let destination = self.map_slice_mut(byte_offset, std::mem::size_of::<u128>())?;
+        NativeEndian::write_u128(destination, value);
+        Ok(())
+    }
+
     pub fn read_exact(&self, byte_offset: usize, bytes: usize) -> Result<&[u8], Error> {
-        if (byte_offset+bytes) > self.map_size {
+        if (byte_offset + bytes) > self.map_size {
             return Err(Error::OutOfBound);
         }
-        Ok(unsafe { slice::from_raw_parts(self.mem_map.as_ptr().wrapping_byte_add(byte_offset), bytes) })
+        Ok(unsafe {
+            slice::from_raw_parts(self.mem_map.as_ptr().wrapping_byte_add(byte_offset), bytes)
+        })
     }
 
     pub fn read_all(&self) -> &[u8] {
         unsafe { slice::from_raw_parts(self.mem_map.as_ptr(), self.map_size) }
     }
 
-    pub fn write_exact(&self, byte_offset: usize, chunk: &[u8]) -> Result<(), Error> {
-        let destination = self.map_slice_mut(byte_offset, chunk.len())?;
-        destination.copy_from_slice(chunk);
-        Ok(())
-    }
-
-    fn map_slice_mut(&self, byte_offset: usize, bytes: usize) -> Result<&mut [u8], Error> {
-        if (byte_offset+bytes) > self.map_size {
+    fn map_slice_mut(&mut self, byte_offset: usize, bytes: usize) -> Result<&mut [u8], Error> {
+        if (byte_offset + bytes) > self.map_size {
             return Err(Error::OutOfBound);
         }
-        Ok(unsafe { slice::from_raw_parts_mut(self.mem_map.as_mut_ptr().wrapping_byte_add(byte_offset), bytes) })
+        Ok(unsafe {
+            slice::from_raw_parts_mut(
+                self.mem_map.as_mut_ptr().wrapping_byte_add(byte_offset),
+                bytes,
+            )
+        })
     }
 }

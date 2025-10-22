@@ -1,5 +1,5 @@
-use crate::error::Error;
 use crate::MapDescription;
+use crate::error::Error;
 use std::fs::{File, OpenOptions};
 use std::io::{Read, Write};
 use std::os::unix::io::{AsRawFd, RawFd};
