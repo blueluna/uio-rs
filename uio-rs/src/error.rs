@@ -1,7 +1,7 @@
 /// Crate errors
 
 /// Error
-#[derive(Debug)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Error {
     /// No device found
     NoDevice,
@@ -9,19 +9,19 @@ pub enum Error {
     DeviceLock,
     /// Invalid address
     Address,
-    /// Underlying IO error
-    Io(std::io::Error),
     /// Parse error
     Parse,
     /// Value out of bounds
     OutOfBound,
     /// Item not found
     NotFound,
+    // I/O error
+     Io(std::io::ErrorKind),
 }
 
 impl From<std::io::Error> for Error {
-    fn from(e: std::io::Error) -> Self {
-        Error::Io(e)
+    fn from(error: std::io::Error) -> Self {
+        Error::Io(error.kind())
     }
 }
 
