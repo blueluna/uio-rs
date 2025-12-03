@@ -34,18 +34,18 @@ fn main() -> ExitCode {
             Command::new("write")
                 .about("Write to the mapped region")
                 .arg(
-                    Arg::new("value")
-                        .index(1)
-                        .value_parser(clap::value_parser!(u32))
-                        .action(clap::ArgAction::Set)
-                        .required(true),
-                )
-                .arg(
                     Arg::new("offset")
                         .index(2)
                         .value_parser(clap::value_parser!(usize))
                         .action(clap::ArgAction::Set)
                         .default_value("0"),
+                )
+                .arg(
+                    Arg::new("value")
+                        .index(1)
+                        .value_parser(clap::value_parser!(u32))
+                        .action(clap::ArgAction::Set)
+                        .required(true),
                 ),
         )
         .subcommand(
@@ -75,7 +75,7 @@ fn main() -> ExitCode {
         println!("Interrupt {}", value);
     }
 
-    let mut mem_map = if let Ok(mm) = uio_rs::Map::new(&device, map_number) {
+    let mut mem_map = if let Ok(mm) = uio_rs::Map::try_from_device(&device, map_number) {
         mm
     } else {
         return ExitCode::FAILURE;

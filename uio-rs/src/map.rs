@@ -6,7 +6,7 @@ use byteorder::{ByteOrder, NativeEndian};
 use memmap2::{MmapOptions, MmapRaw};
 use std::slice;
 
-pub struct Map<'a> {
+pub struct Map {
     /// UIO index
     uio_number: u16,
     /// Mapping index
@@ -15,12 +15,10 @@ pub struct Map<'a> {
     map_size: usize,
     /// Memory mapping
     mem_map: MmapRaw,
-    /// UIO device
-    _device: &'a Device,
 }
 
-impl<'a> Map<'a> {
-    pub fn new(device: &'a Device, map_number: u16) -> Result<Self, Error> {
+impl Map {
+    pub fn try_from_device(device: &Device, map_number: u16) -> Result<Self, Error> {
         let description = MapDescription::from_numbers(device.uio(), map_number)?;
 
         let offset = u64::from(description.map_number) * get_page_size();
@@ -37,7 +35,6 @@ impl<'a> Map<'a> {
             map_number: description.map_number,
             map_size,
             mem_map,
-            _device: device,
         })
     }
 
